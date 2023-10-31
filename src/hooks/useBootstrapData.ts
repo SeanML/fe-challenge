@@ -2,8 +2,16 @@ import { useEffect } from 'react';
 import { useSnapshot } from 'valtio';
 
 import { getData } from '../../request/api';
-import { setGradeBalance, setLoansList, tableStore } from '../store/tableStore';
-import { aggregateLoans } from '../utils/aggregateLoans';
+import {
+	setGradeToBalance,
+	setHomeOwnershipOptions,
+	setLoansList,
+	setQuarterOptions,
+	setTermOptions,
+	setYearOptions,
+	tableStore,
+} from '../store/tableStore';
+import { processLoans } from '../utils/processLoans';
 
 export const useBootstrapData = () => {
 	const { loansList } = useSnapshot(tableStore);
@@ -14,9 +22,17 @@ export const useBootstrapData = () => {
 
 	useEffect(() => {
 		if (loansList?.length) {
-			const aggregate = aggregateLoans(loansList);
+			const { gradeToBalance, homeOwnership, quarters, terms, years } =
+				processLoans(loansList);
 
-			setGradeBalance(aggregate);
+			const sortedByGrade = new Map([...gradeToBalance.entries()].sort());
+
+			setGradeToBalance(sortedByGrade);
+
+			setHomeOwnershipOptions(homeOwnership);
+			setQuarterOptions(new Set([...quarters].sort()));
+			setTermOptions(new Set([...terms].sort()));
+			setYearOptions(new Set([...years].sort()));
 		}
 	}, [loansList]);
 
